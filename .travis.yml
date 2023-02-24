@@ -14,3 +14,8 @@ after_success:
   - docker build -t leeyang2020/complex-nginx ./nginx
   - docker build -t leeyang2020/complex-server ./server
   - docker build -t leeyang2020/complex-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push leeyang2020/complex-client
+  - docker push leeyang2020/complex-nginx
+  - docker push leeyang2020/complex-server
+  - docker push leeyang2020/complex-worker

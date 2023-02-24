@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      docker:
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build client Docker image
+        run: docker build -t leeyang2020/react-test -f ./client/Dockerfile.dev ./client
+
+      - name: Run client tests
+        run: docker run -e CI=true leeyang2020/react-test npm test
+
+      - name: Build and push Docker images
+        if: success()
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_ID: ${{ secrets.DOCKER_ID }}
+        run: |
+          docker build -t leeyang2020/complex-client ./client
+          docker build -t leeyang2020/complex-nginx ./nginx
+          docker build -t leeyang2020/complex-server ./server
+          docker build -t leeyang2020/complex-worker ./worker
+          echo $DOCKER_PASSWORD | docker login -u $DOCKER_ID --password-stdin
+          docker push leeyang2020/complex-client
+          docker push leeyang2020/complex-nginx
+          docker push leeyang2020/complex-server
+          docker push leeyang2020/complex-worker
